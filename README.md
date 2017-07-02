@@ -10,7 +10,7 @@ Default phase: generate-sources
 <build>
   <plugins>
     <plugin>
-      <groupId>com.bekioui.plugin</groupId>
+      <groupId>com.bekioui.maven.plugin</groupId>
       <artifactId>merge-maven-plugin</artifactId>
       <version>1.0.0</version>
       <executions>

@@ -32,9 +32,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.DirectoryScanner;
 
 @Mojo(name = "merge", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-public class MergePojo extends AbstractMojo {
+public class MergeMojo extends AbstractMojo {
 
 	@Parameter(property = "merges", required = true)
 	private List<Merge> merges;
@@ -44,7 +45,7 @@ public class MergePojo extends AbstractMojo {
 		for (Merge merge : merges) {
 			createTargetFile(merge.getTarget());
 			try (BufferedWriter writer = new BufferedWriter(new FileWriter(merge.getTarget(), true))) {
-				for (File file : merge.getSources()) {
+				for (File file : getSources(merge)) {
 					if (file.isDirectory()) {
 						merge(checkSourceDirectory(file), writer);
 					} else {
@@ -52,8 +53,36 @@ public class MergePojo extends AbstractMojo {
 					}
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new MojoExecutionException("Failed to write into target file", e);
 			}
+		}
+	}
+
+	private List<File> getSources(Merge merge) throws MojoExecutionException {
+		if(merge.getSources() != null) {
+			return merge.getSources();
+		} else if (merge.getPattern() != null) {
+			DirectoryScanner scanner = new DirectoryScanner();
+			System.out.println("Base dir: " + merge.getPatternDir());
+			System.out.println("Pattern: " + merge.getPattern());
+
+			scanner.setBasedir(merge.getPatternDir());
+			if (merge.getPattern() != null) {
+				scanner.setIncludes(new String[]{merge.getPattern()});
+			}
+			scanner.scan();
+
+			List<String> strings = Arrays.asList(scanner.getIncludedFiles());
+			List<File> stringToFiles = new ArrayList<>(strings.size());
+			System.out.println("Number of files: " + strings.size());
+			for(String file : strings) {
+				stringToFiles.add(new File(merge.getPatternDir(), file));
+			}
+
+			return stringToFiles;
+		} else {
+			throw new MojoExecutionException("Failed to find files to merge, <sources> or <pattern> are not defined");
 		}
 	}
 

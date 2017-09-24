@@ -31,8 +31,8 @@ public class Merge {
 	@Parameter(property = "pattern", required = true)
 	private String pattern;
 
-	@Parameter( defaultValue = "${project.basedir}", readonly = true )
-	private File patternDir;
+	@Parameter(defaultValue = "${project.basedir}", readonly = true)
+	private File searchDir;
 
 	public File getTarget() {
 		return target;
@@ -46,13 +46,13 @@ public class Merge {
 		return pattern;
 	}
 
-	public File getPatternDir() {
-		return patternDir;
+	public File getSearchDir() {
+		return searchDir;
 	}
 
 	@Override
 	public String toString() {
-		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + "]";
+		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + ", searchDir=" + searchDir + "]";
 	}
 
 }

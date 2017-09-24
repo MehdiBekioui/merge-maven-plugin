@@ -1,6 +1,6 @@
 # Merge Maven Plugin
 
-The merge maven plugin allows you to merge multiple files into one. Target has to be a file and sources could be files or directories. The order of sources is used to merge files. If a source path is a directory with sub-directories and files, then sub-directories are merged before files.
+The merge maven plugin allows you to merge multiple files into one. 
 
 ## Plugin declaration
 
@@ -12,7 +12,7 @@ Default phase: generate-sources
     <plugin>
       <groupId>com.bekioui.maven.plugin</groupId>
       <artifactId>merge-maven-plugin</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
       <executions>
         <execution>
           <id>merge-files</id>
@@ -28,6 +28,11 @@ Default phase: generate-sources
                   <source>src/main/resources/file.txt</source>
                 </sources>
               </merge>
+              <merge>
+                <target>${project.build.directory}/merge.csv</target>
+                <searchDir>src/main/resources/directory</searchDir>
+                <pattern>file[0-9]+.csv</pattern>
+              </merge>
             </merges>
           </configuration>
         </execution>
@@ -40,6 +45,20 @@ Default phase: generate-sources
 ## Goal
 
 * `merge:merge`: merge multiple files into one
+
+## Configuration
+
+**Target** tag has to be a file.
+
+### List of sources
+
+You can merge files by declaring a list of sources inside the **sources** tag. Each source can be a file or a directory.
+
+The order of sources is used to merge files. If a source is a directory with sub-directories and files then sub-directories are merged before files.
+
+### Pattern
+
+You can define a regular expression to select files to be merged. Use **searchDir** and **pattern** tags instead of **sources** tag.
 
 ## License
 	

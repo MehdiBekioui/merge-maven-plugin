@@ -22,9 +22,13 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -32,10 +36,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.DirectoryScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mojo(name = "merge", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class MergeMojo extends AbstractMojo {
+
+	private static Logger LOGGER = LoggerFactory.getLogger(MergeMojo.class);
 
 	@Parameter(property = "merges", required = true)
 	private List<Merge> merges;
@@ -52,35 +59,37 @@ public class MergeMojo extends AbstractMojo {
 						merge(checkSourceFile(file), writer);
 					}
 				}
+			} catch (MojoExecutionException e) {
+				throw e;
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw new MojoExecutionException("Failed to write into target file", e);
 			}
 		}
 	}
 
 	private List<File> getSources(Merge merge) throws MojoExecutionException {
-		if(merge.getSources() != null) {
+		if (merge.getSources() != null) {
 			return merge.getSources();
 		} else if (merge.getPattern() != null) {
-			DirectoryScanner scanner = new DirectoryScanner();
-			System.out.println("Base dir: " + merge.getPatternDir());
-			System.out.println("Pattern: " + merge.getPattern());
-
-			scanner.setBasedir(merge.getPatternDir());
-			if (merge.getPattern() != null) {
-				scanner.setIncludes(new String[]{merge.getPattern()});
-			}
-			scanner.scan();
-
-			List<String> strings = Arrays.asList(scanner.getIncludedFiles());
-			List<File> stringToFiles = new ArrayList<>(strings.size());
-			System.out.println("Number of files: " + strings.size());
-			for(String file : strings) {
-				stringToFiles.add(new File(merge.getPatternDir(), file));
+			if (!merge.getSearchDir().isDirectory()) {
+				throw new MojoExecutionException("searchDir is not a directory: " + merge.getSearchDir().getAbsolutePath());
 			}
 
-			return stringToFiles;
+			LOGGER.info("Search directory: {}", merge.getSearchDir());
+			LOGGER.info("Pattern: {}", merge.getPattern());
+
+			Pattern pattern = Pattern.compile(merge.getPattern());
+			try {
+				List<File> files = Files.walk(merge.getSearchDir().toPath()) //
+						.map(Path::toFile) //
+						.filter(file -> pattern.matcher(file.getName()).matches()) //
+						.collect(Collectors.toList());
+				System.out.println(files.stream().map(File::getName).collect(Collectors.toList()));
+				LOGGER.info("Number of found files: {}", files.size());
+				return files;
+			} catch (IOException e) {
+				throw new MojoExecutionException("Failed to find files with pattern.", e);
+			}
 		} else {
 			throw new MojoExecutionException("Failed to find files to merge, <sources> or <pattern> are not defined");
 		}

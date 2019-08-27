@@ -50,7 +50,7 @@ public class MergeMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		for (Merge merge : merges) {
-			createTargetFile(merge.getTarget());
+			createTargetFile(merge);
 			try (BufferedWriter writer = new BufferedWriter(new FileWriter(merge.getTarget(), true))) {
 				for (File file : getSources(merge)) {
 					if (file.isDirectory()) {
@@ -95,13 +95,14 @@ public class MergeMojo extends AbstractMojo {
 		}
 	}
 
-	private void createTargetFile(File file) throws MojoExecutionException {
+	private void createTargetFile(Merge merge) throws MojoExecutionException {
+		File file = merge.getTarget();
 		if (file.isDirectory()) {
 			throw new MojoExecutionException("Target file cannot be a directory: " + file.getAbsolutePath());
 		}
 
-		if (file.exists()) {
-			throw new MojoExecutionException("Targe file already exists: " + file.getAbsolutePath());
+		if (!merge.isOverride() && file.exists()) {
+			throw new MojoExecutionException("Target file already exists: " + file.getAbsolutePath());
 		}
 
 		File parentFile = file.getParentFile();
@@ -111,6 +112,10 @@ public class MergeMojo extends AbstractMojo {
 
 		if (!parentFile.isDirectory()) {
 			throw new MojoExecutionException("Target parent file is not a directory: " + parentFile.getAbsolutePath());
+		}
+
+		if (merge.isOverride()) {
+			file.delete();
 		}
 
 		try {

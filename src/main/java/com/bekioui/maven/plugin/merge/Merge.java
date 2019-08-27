@@ -31,6 +31,9 @@ public class Merge {
 	@Parameter(property = "pattern", required = true)
 	private String pattern;
 
+	@Parameter(property = "override")
+	private boolean override;
+
 	@Parameter(defaultValue = "${project.basedir}", readonly = true)
 	private File searchDir;
 
@@ -46,13 +49,17 @@ public class Merge {
 		return pattern;
 	}
 
+	public boolean isOverride() {
+		return override;
+	}
+
 	public File getSearchDir() {
 		return searchDir;
 	}
 
 	@Override
 	public String toString() {
-		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + ", searchDir=" + searchDir + "]";
+		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + ", override=" + override + ", searchDir=" + searchDir + "]";
 	}
 
 }

@@ -1,6 +1,6 @@
 # Merge Maven Plugin
 
-The merge maven plugin allows you to merge multiple files into one. 
+The merge maven plugin allows you to merge multiple files into one.
 
 ## Plugin declaration
 
@@ -27,6 +27,7 @@ Default phase: generate-sources
                   <source>src/main/resources/directory</source>
                   <source>src/main/resources/file.txt</source>
                 </sources>
+                <override>true</override>
               </merge>
               <merge>
                 <target>${project.build.directory}/merge.csv</target>
@@ -60,16 +61,20 @@ The order of sources is used to merge files. If a source is a directory with sub
 
 You can define a regular expression to select files to be merged. Use **searchDir** and **pattern** tags instead of **sources** tag.
 
+### Override
+
+Optional tag to override existing targeted file. The default value is false and a MojoExecutionException is thrown if the targeted file exists.
+
 ## License
-	
+
 	Copyright (C) 2017 Mehdi Bekioui (consulting@bekioui.com)
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 		http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
